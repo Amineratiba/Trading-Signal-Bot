@@ -1,0 +1,2 @@
+node like-repost.js 'USERNAME' 'PASSWORD'
+node helper/jsonBuilder.js USERNAME /media/username/H/projects/thebot/users/username/file.txt
