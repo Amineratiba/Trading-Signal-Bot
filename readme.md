@@ -1,4 +1,4 @@
-:blush: :robot: Minds.com Bot :robot: :blush:
+:blush: :robot: tradingview.com Bot :robot: :blush:
 ---
 An **advanced Bot** for **tracking technical trade pairs signals**.
 The bot run every N minutes, check the pair links on `www.tradingview.com` 
