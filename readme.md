@@ -3,7 +3,7 @@
 An **advanced Bot** for **tracking technical trade pairs signals**.
 The bot run every N minutes, check the pair links on `www.tradingview.com` 
 
-### Features:
+## Features:
 * Auto checking
 * Triggering Signals on your Telegram Channel
 * Can be deployed on heroku
