@@ -1,11 +1,11 @@
 :blush: :robot: tradingview.com Bot :robot: :blush:
 ---
 An **advanced Bot** for **tracking technical trade pairs signals**.
-The bot run every N minutes, check the pair links on `www.tradingview.com` 
+The bot run every `N` minutes, check the pair from `www.tradingview.com` 
 
 ## Features:
 * Auto checking
-* Triggering Signals on your Telegram Channel
+* Triggering Signals on a Telegram Channel
 * Can be deployed on heroku
 * Scheduling
 

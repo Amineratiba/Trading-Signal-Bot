@@ -114,7 +114,7 @@ async function crypto (browser, page, coinPairLink, chat_id)
 		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(4)",
 		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(3)",
 		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(2)"];
-	for (let index = 0; index < Object.keys(sels).length; index++)
+	for (let index = 0;index < Object.keys(sels).length;index++)
 	{
 		const sel = sels[index];
 		await page.$eval(sel, el => el.click());
@@ -135,7 +135,7 @@ async function crypto (browser, page, coinPairLink, chat_id)
 	let message = "";
 	await common.goingToPage(page, ideasLink);
 	await delay(4000);
-	for (let index = 1; index < 10; index++)
+	for (let index = 1;index < 10;index++)
 	{
 		try
 		{
@@ -230,7 +230,13 @@ try
 	{
 		setInterval(function ()
 		{
-			http.get(sec.herokoAppAddress);
+			try
+			{
+				https.get(defaults.herokoAppAddress);
+			} catch (error)
+			{
+				console.log("Could not send the request", error);
+			}
 		}, 300000); // every 5 minutes (300000)
 
 		app.get('/', (req, res) => res.send("hi"));
