@@ -23,11 +23,11 @@ bot.start(function (ctx)
 });
 bot.help(function (res)
 {
-	res.reply("Heey");
+	res.reply("No Help :)");
 });
 bot.on("sticker", function (res)
 {
-	res.reply("HEEY");
+	res.reply("Nice Sticker");
 });
 bot.hears("hi", function (res)
 {
@@ -200,17 +200,22 @@ async function run ()
 			"--window-position=0,0",
 			"--ignore-certifcate-errors",
 			"--ignore-certifcate-errors-spki-list",
-			`--user-agent=${ userAgent }`
+			`--user-agent=${ userAgent }`,
+			"--noerrordialogs",
+			"--disable-web-security",
+			"--allow-file-access-from-file",
+			"--start-maximized"
 		];
 	const options =
 	{
 		args,
-		headless: defaults.headlessS,
 		// executablePath: "/usr/bin/google-chrome-stable",
+		headless: defaults.headlessS,
 		ignoreHTTPSErrors: true,
 		// userDataDir: `./chromData/`
+		defaultViewport: null,
+		appMode: true
 	};
-	// puppeteer.use(pluginStealth());
 	const browser = await puppeteer.launch(options);
 	const page = await browser.newPage();
 	await page.evaluateOnNewDocument(preload);
@@ -345,5 +350,5 @@ function preload ()
 			}
 		}
 	};
-	window.navigator.languages = ["en-US", "en"];
+	window.navigator.languages = [ "en-US", "en" ];
 }
