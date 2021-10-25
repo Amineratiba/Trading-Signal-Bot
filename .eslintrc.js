@@ -37,6 +37,10 @@ module.exports = {
 				"allowSingleLine": true
 			}
 		],
+		// "arrow-parens": [
+		// 	"error",
+		// 	"always"
+		// ],
 		"arrow-body-style": [
 			"error",
 			"always"
@@ -127,6 +131,13 @@ module.exports = {
 		"space-before-blocks": [
 			"warn",
 		],
+		"space-before-function-paren": ["error", "always"],
+		"keyword-spacing": [
+			"error"
+		],
+		// "func-call-spacing": [
+		// 	"error", "always"
+		// ],
 		"function-paren-newline": [
 			"warn",
 		],

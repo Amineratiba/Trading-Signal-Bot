@@ -1,4 +1,3 @@
-"use strict";
 const https = require("https");
 var express = require("express");
 const puppeteer = require("puppeteer");
@@ -20,7 +19,7 @@ bot.start(function (ctx)
 {
 	try 
 	{
-		run(ctx);
+		run();
 	}
 	catch (error) 
 	{
@@ -42,7 +41,7 @@ bot.hears("hi", function (res)
 });
 bot.launch();
 
-if(defaults.useExpress)
+if (defaults.useExpress)
 {
 	expressServer();
 }
@@ -51,7 +50,7 @@ process.once("SIGTERM", () => {return bot.stop("SIGTERM");});
 
 console.log("\n", date.format(new Date(), "YYYY/MM/DD HH:mm:ss"), "\n");
 
-async function run (ctx)
+async function run ()
 {
 	if (isRunning == false)
 	{
@@ -110,16 +109,16 @@ async function crypto (page, coinPairLink, chat_id)
 	await delay(4000);
 	const changeSelVal = "div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div.js-symbol-change-direction.tv-symbol-price-quote__change.tv-symbol-price-quote__change--growing > span.js-symbol-change.tv-symbol-price-quote__change-value";
 	const changeSelPer = "div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div.js-symbol-change-direction.tv-symbol-price-quote__change.tv-symbol-price-quote__change--growing > span.js-symbol-change-pt.tv-symbol-price-quote__change-value";
-	const changeVal = await page.$eval(changeSelVal, el => {return el.innerHTML;});
-	let changePer = await page.$eval(changeSelPer, el => {return el.innerHTML;});
+	const changeVal = await page.$eval(changeSelVal, (el) => {return el.innerHTML;});
+	let changePer = await page.$eval(changeSelPer, (el) => {return el.innerHTML;});
 	if (changePer[0] == "(" && changePer[changePer.length - 1] == ")")
 	{
 		changePer = changePer.substring(1, changePer.length - 1);
 	}
 	const coinPairNameSel = "div.tv-category-header__title > div:nth-child(1) > span > span.tv-symbol-header__second-line--text";
-	const coinpairName = await page.$eval(coinPairNameSel, el => {return el.innerHTML;});
+	const coinpairName = await page.$eval(coinPairNameSel, (el) => {return el.innerHTML;});
 	const currentPriceSel = "div.tv-category-header__main-price.js-scroll-container > div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div.tv-symbol-price-quote__value.js-symbol-last";
-	const currentPrice = await page.$eval(currentPriceSel, el => {return el.textContent;});
+	const currentPrice = await page.$eval(currentPriceSel, (el) => {return el.textContent;});
 	await bot.telegram.sendMessage(
 		chat_id, 
 		`==== ${ coinpairName } | ${ changePer } | ${ changeVal } | ${ currentPrice } ====`
@@ -132,13 +131,13 @@ async function crypto (page, coinPairLink, chat_id)
 	{
 		const sel = sels[index];
 		await common.waitAndClick(page, sel);
-		const priod = await page.$eval(sel, el => {return el.innerHTML;}); // 1 week
+		const priod = await page.$eval(sel, (el) => {return el.innerHTML;}); // 1 week
 		const SumSel = "#technicals-root > div > div > div:nth-child(2) > div:nth-child(2) > span:nth-child(3)";
-		const SUMRes = await page.$eval(SumSel, el => {return el.innerHTML;});
+		const SUMRes = await page.$eval(SumSel, (el) => {return el.innerHTML;});
 		const MASel = "#technicals-root > div > div > div:nth-child(2) > div:nth-child(3) > span";
-		const MARes = await page.$eval(MASel, el => {return el.innerHTML;});
+		const MARes = await page.$eval(MASel, (el) => {return el.innerHTML;});
 		const OSSel = "#technicals-root > div > div > div:nth-child(2) > div:nth-child(1) > span";
-		const OSRes = await page.$eval(OSSel, el => {return el.innerHTML;});
+		const OSRes = await page.$eval(OSSel, (el) => {return el.innerHTML;});
 		await checkRes(possiblities, [SUMRes, MARes, OSRes], chat_id);
 		await sendToTel(possiblities, [SUMRes, MARes, OSRes], `${ priod }`, chat_id);
 	}
@@ -146,7 +145,7 @@ async function crypto (page, coinPairLink, chat_id)
 
 function checkRes (possiblities, params, chat_id)
 {
-	params.forEach(element =>
+	params.forEach((element) =>
 	{
 		if (possiblities.indexOf(element.toLowerCase()) == -1)
 		{
@@ -162,7 +161,7 @@ async function sendToTel (possiblities, params, name, chat_id)
 	let buy = 0;
 	let sellC = 0;
 	let buyC = 0;
-	params.forEach(element =>
+	params.forEach((element) =>
 	{
 		const loc = possiblities.indexOf(element.toLowerCase());
 		if (loc > 2)
@@ -193,7 +192,7 @@ async function sendToTel (possiblities, params, name, chat_id)
 	}
 }
 
-function expressServer() 
+function expressServer () 
 {
 	try
 	{
