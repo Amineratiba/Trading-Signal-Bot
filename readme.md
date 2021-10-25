@@ -1,9 +1,9 @@
-:blush: :robot: tradingview.com Bot :robot: :blush:
+:blush: :robot: tradingview.com Alert Bot :robot: :blush:
 ---
-An **advanced Bot** for **tracking technical trade pairs signals**.
-The bot runs every `N` minutes, check the pair from `www.tradingview.com` 
+**Advanced Bot** for **tracking technical trade pairs signals**.
+The bot runs every `N` minutes and checks the pair from `www.tradingview.com` 
 
-## Features:
+## Features
 * Auto checking
 * Triggering Signals on a Telegram Channel
 * Can be deployed on Heroku
@@ -15,7 +15,7 @@ The bot runs every `N` minutes, check the pair from `www.tradingview.com`
 
 # Installation
 
-~~~bash
+```bash
 # install nodejs, tor, google-chrome, build-essential, make, g++
 git clone https://github.com/mlibre/tradeSignalBot.git
 npm install
@@ -25,11 +25,6 @@ nano defaults.json
 mv sec.json.bak sec.json
 # fill the variables
 node bot.js
-~~~
-
-### Important Global options
-```javascript
-"headlessS": false,
 ```
 
 # Run

@@ -11,7 +11,7 @@
     "editor.tabCompletion": true,
     "editor.tabSize": 3,
     "editor.insertSpaces": false,
-    "window.zoomLevel": 1,
+    "window.zoomLevel": 2,
     "workbench.sideBar.location": "left",
     "workbench.statusBar.visible": true,
     "workbench.activityBar.visible": false,
