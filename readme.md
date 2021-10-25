@@ -25,7 +25,7 @@ The bot runs every `N` minutes and checks the pair from `www.tradingview.com`
 2. Add the bot as an admin. `@BTC_ETH_TRADE_BOT`
 3. Open the channel via browser
 4. https://web.telegram.org/z/#-1719438250
-5. In this case `-1719438250` is the channel ID.
+5. In this case `-1001719438250` is the channel ID we will use.
 
 # Installation
 ```bash

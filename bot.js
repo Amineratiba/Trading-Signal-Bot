@@ -18,7 +18,14 @@ const port = process.env.PORT || defaults.expressPort;
 
 bot.start(function (ctx)
 {
-	run();
+	try 
+	{
+		run(ctx);
+	}
+	catch (error) 
+	{
+		console.error(error);
+	}
 	ctx.reply("Bot is starting");
 });
 bot.help(function (res)
@@ -95,93 +102,8 @@ async function sendToTel (possiblities, params, name, pageEl, chat_id)
 	}
 }
 
-async function crypto (browser, page, coinPairLink, chat_id)
+async function run (ctx)
 {
-	await delay(4000);
-	const possiblities = ["strong sell", "sell", "neutral", "buy", "strong buy"];
-	await common.goingToPage(page, coinPairLink);
-	await common.closingOtherTabs(browser, page);
-	await delay(4000);
-	const changeSel = "#anchor-page-1 > div > div.tv-category-header__price-line.tv-category-header__price-line--allow-wrap-on-tablet.js-header-symbol-quotes.quote-ticker-inited > div.tv-category-header__main-price.js-scroll-container > div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div:nth-child(3) > span:nth-child(2)";
-	let change = await page.$eval(changeSel, el => {return el.innerHTML;});
-	if (change[0] == "(" && change[change.length - 1] == ")")
-	{
-		change = change.substring(1, change.length - 1);
-	}
-	const coinPairNameSel = "#anchor-page-1 > div > div.tv-category-header__title-line > div.tv-category-header__title > h1 > div.tv-symbol-header__long-title";
-	const coinpairName = await page.$eval(coinPairNameSel, el => {return el.innerHTML;});
-	const currentPriceSel = "#anchor-page-1 > div > div.tv-category-header__price-line.tv-category-header__price-line--allow-wrap-on-tablet.js-header-symbol-quotes.quote-ticker-inited > div.tv-category-header__main-price.js-scroll-container > div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div.tv-symbol-price-quote__value.js-symbol-last";
-	const currentPrice = await page.$eval(currentPriceSel, el => {return el.textContent;});
-	await bot.telegram.sendMessage(chat_id, `===== ${ coinpairName } | ${ change } | ${ currentPrice } =====`);
-	const sels = ["#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(8)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(7)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(6)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(5)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(4)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(3)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(2)"];
-	for (let index = 0;index < Object.keys(sels).length;index++)
-	{
-		const sel = sels[index];
-		await page.$eval(sel, el => {return el.click();});
-		await delay(4000);
-		const priod = await page.$eval(sel, el => {return el.innerHTML;});
-		const elPriod = await page.$$("#technicals-root > div > div > div.speedometersContainer-1EFQq-4i");
-		const SumSel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(2) > span:nth-child(3)";
-		const SUMRes = await page.$eval(SumSel, el => {return el.innerHTML;});
-		const MASel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(3) > span";
-		const MARes = await page.$eval(MASel, el => {return el.innerHTML;});
-		const OSSel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(1) > span";
-		const OSRes = await page.$eval(OSSel, el => {return el.innerHTML;});
-		await checkRes(possiblities, [SUMRes, MARes, OSRes], chat_id);
-		await sendToTel(possiblities, [SUMRes, MARes, OSRes], `${ priod }`, elPriod[0], chat_id);
-	}
-	// Ideas	
-	const ideasLink = coinPairLink.replace("technicals", "ideas");
-	let message = "";
-	await common.goingToPage(page, ideasLink);
-	await delay(4000);
-	for (let index = 1;index < 10;index++)
-	{
-		try
-		{
-			const idSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div`;
-			const idPriSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div > div:nth-child(2) > div> span`;
-			const idSigSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div > div:nth-child(2) > span`;
-			let idPri = await page.$eval(idPriSel, el => {return el.textContent;});
-			let idSig = await page.$eval(idSigSel, el => {return el.textContent;});
-			idPri = common.trimChar(idPri, ",");
-			idSig = common.trimChar(idSig, ",");
-			idPri = idPri.trim();
-			idSig = idSig.trim();
-			if (idSig == "Long")
-			{
-				idSig = "↗️";
-			}
-			else if (idSig == "Short")
-			{
-				idSig = "🔻";
-			}
-			if (idSig != "Education")
-			{
-				message = `${message + idPri  } ${  idSig  }  `;
-			}
-
-		}
-		catch (error)
-		{
-
-		}
-	}
-	if (message != "")
-	{
-		await bot.telegram.sendMessage(chat_id, message);
-	}
-}
-
-async function run ()
-{
-	const chIDs = sec.telegramChannelID; // Channel ID Or Username
 	if (isRunning == false)
 	{
 		isRunning = true;
@@ -220,21 +142,104 @@ async function run ()
 	const page = await browser.newPage();
 	await page.evaluateOnNewDocument(preload);
 	await page.setDefaultNavigationTimeout(50000);
+	await common.setWindowSize(page, defaults.viewport.width , defaults.viewport.height);
 	await page.setViewport(defaults.viewport);
-	// await crypto(browser, page, 'https://www.tradingview.com/symbols/LBCUSD/technicals/', 'LBCUSD.png');
-	await crypto(browser, page, "https://www.tradingview.com/symbols/LBCBTC/technicals/", chIDs["lbc"]);
-	await crypto(browser, page, "https://www.tradingview.com/symbols/ETHUSD/technicals/", chIDs["eth"]);
-	await crypto(browser, page, "https://www.tradingview.com/symbols/ETHBTC/technicals/", chIDs["btc"]);
-	await crypto(browser, page, "https://www.tradingview.com/symbols/BTCUSD/technicals/", chIDs["btc"]);
-	await crypto(browser, page, "https://www.tradingview.com/symbols/BNBUSDT/technicals/", chIDs["bnb"]);
-	await crypto(browser, page, "https://www.tradingview.com/symbols/EOSUSDT/technicals/", chIDs["eos"]);
-	await crypto(browser, page, "https://www.tradingview.com/symbols/LINKUSDT/technicals/", chIDs["link"]);
+	await common.closingOtherTabs(browser, page);
+	await crypto(page, sec.pairURL, sec.telegramChannelID);
 	// await page.screenshot({path: 'screenshot.png'});
 	console.log("closing browser ... ");
 	await common.closingBrowser(browser, page);
 	isRunning = false;
 	return;
 }
+
+async function crypto (page, coinPairLink, chat_id)
+{
+	await delay(4000);
+	const possiblities = ["strong sell", "sell", "neutral", "buy", "strong buy"];
+	await common.goingToPage(page, coinPairLink);
+	await delay(4000);
+	const changeSelVal = "div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div.js-symbol-change-direction.tv-symbol-price-quote__change.tv-symbol-price-quote__change--growing > span.js-symbol-change.tv-symbol-price-quote__change-value";
+	const changeSelPer = "div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div.js-symbol-change-direction.tv-symbol-price-quote__change.tv-symbol-price-quote__change--growing > span.js-symbol-change-pt.tv-symbol-price-quote__change-value";
+	const changeVal = await page.$eval(changeSelVal, el => {return el.innerHTML;});
+	let changePer = await page.$eval(changeSelPer, el => {return el.innerHTML;});
+	if (changePer[0] == "(" && changePer[changePer.length - 1] == ")")
+	{
+		changePer = changePer.substring(1, changePer.length - 1);
+	}
+	const coinPairNameSel = "div.tv-category-header__title > div:nth-child(1) > span > span.tv-symbol-header__second-line--text";
+	const coinpairName = await page.$eval(coinPairNameSel, el => {return el.innerHTML;});
+	const currentPriceSel = "div.tv-category-header__main-price.js-scroll-container > div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div.tv-symbol-price-quote__value.js-symbol-last";
+	const currentPrice = await page.$eval(currentPriceSel, el => {return el.textContent;});
+	await bot.telegram.sendMessage(
+		chat_id, 
+		`==== ${ coinpairName } | ${ changePer } | ${ changeVal } | ${ currentPrice } ====`
+	);
+	const sels = ["#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(8)",
+		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(7)",
+		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(6)",
+		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(5)",
+		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(4)",
+		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(3)",
+		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(2)"];
+	for (let index = 0;index < Object.keys(sels).length;index++)
+	{
+		const sel = sels[index];
+		await page.$eval(sel, el => {return el.click();});
+		await delay(4000);
+		const priod = await page.$eval(sel, el => {return el.innerHTML;});
+		const elPriod = await page.$$("#technicals-root > div > div > div.speedometersContainer-1EFQq-4i");
+		const SumSel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(2) > span:nth-child(3)";
+		const SUMRes = await page.$eval(SumSel, el => {return el.innerHTML;});
+		const MASel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(3) > span";
+		const MARes = await page.$eval(MASel, el => {return el.innerHTML;});
+		const OSSel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(1) > span";
+		const OSRes = await page.$eval(OSSel, el => {return el.innerHTML;});
+		await checkRes(possiblities, [SUMRes, MARes, OSRes], chat_id);
+		await sendToTel(possiblities, [SUMRes, MARes, OSRes], `${ priod }`, elPriod[0], chat_id);
+	}
+	// Ideas	
+	const ideasLink = coinPairLink.replace("technicals", "ideas");
+	let message = "";
+	await common.goingToPage(page, ideasLink);
+	await delay(4000);
+	for (let index = 1;index < 10;index++)
+	{
+		try
+		{
+			const idPriSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div > div:nth-child(2) > div> span`;
+			const idSigSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div > div:nth-child(2) > span`;
+			let idPri = await page.$eval(idPriSel, el => {return el.textContent;});
+			let idSig = await page.$eval(idSigSel, el => {return el.textContent;});
+			idPri = common.trimChar(idPri, ",");
+			idSig = common.trimChar(idSig, ",");
+			idPri = idPri.trim();
+			idSig = idSig.trim();
+			if (idSig == "Long")
+			{
+				idSig = "↗️";
+			}
+			else if (idSig == "Short")
+			{
+				idSig = "🔻";
+			}
+			if (idSig != "Education")
+			{
+				message = `${message + idPri  } ${  idSig  }  `;
+			}
+
+		}
+		catch (error)
+		{
+
+		}
+	}
+	if (message != "")
+	{
+		await bot.telegram.sendMessage(chat_id, message);
+	}
+}
+
 
 function expressServer() 
 {

@@ -1,8 +1,6 @@
 {
-	"telegramChannelID" : 
-	{
-		"btc" : "-3213213"
-	},
-	"telegramBotToken" : "4234:432424",
+	"telegramChannelID" : "-100number",
+	"pairURL": "https://www.tradingview.com/symbols/ETHUSD/technicals/",
+	"telegramBotToken" : "4324:432424-Y",
 	"herokoAppAddress" : "http://address.herokuapp.com/"
 }

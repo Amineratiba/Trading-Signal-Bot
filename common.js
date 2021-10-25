@@ -5,6 +5,7 @@ const sleep = require("sleep");
 const random = require("random");
 const internetAvailable = require("internet-available");
 const delay = require("delay");
+const colors = require("colors");
 
 exports.internetCheck = async function()
 {
@@ -98,6 +99,14 @@ exports.closingBrowser = async function (browser, page)
 			// console.log("browser close error");
 		}
 	}
+};
+
+exports.setWindowSize = async function (page, width, height) 
+{
+	const session = await page.target().createCDPSession();
+	const {windowId} = await session.send("Browser.getWindowForTarget");
+	await session.send("Browser.setWindowBounds", {windowId, bounds: {width, height}});
+	await session.detach();
 };
 
 exports.trimChar = function(string, charToRemove) 
