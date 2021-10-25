@@ -51,57 +51,6 @@ process.once("SIGTERM", () => {return bot.stop("SIGTERM");});
 
 console.log("\n", date.format(new Date(), "YYYY/MM/DD HH:mm:ss"), "\n");
 
-function checkRes (possiblities, params, chat_id)
-{
-	params.forEach(element =>
-	{
-		if (possiblities.indexOf(element.toLowerCase()) == -1)
-		{
-			console.log("Sometinhs is wrong", element);
-			bot.telegram.sendMessage(chat_id, `Sometinhs is wrong + ${ element }`);
-		}
-	});
-}
-
-async function sendToTel (possiblities, params, name, pageEl, chat_id)
-{
-	let sell = 0;
-	let buy = 0;
-	let sellC = 0;
-	let buyC = 0;
-	params.forEach(element =>
-	{
-		const loc = possiblities.indexOf(element.toLowerCase());
-		if (loc > 2)
-		{
-			buy = buy + loc;
-			buyC++;
-		}
-		if (loc < 2)
-		{
-			sell = sell + loc;
-			sellC++;
-		}
-	});
-	if (buy > 10 && buyC == 3 || sell < 2 && sellC == 3)
-	{
-		let sign = "";
-		if (buy > 10 && buyC == 3)
-		{
-			sign = "↗️";
-		}
-		else if (sell < 2 && sellC == 3)
-		{
-			sign = "🔻";
-		}
-		const message = `${ name } ${ sign }\nSummary: ${ params[0] }\nMoving Averages: ${ params[1] }\nOscillators: ${ params[2] }`;
-		console.log(message);
-		await bot.telegram.sendMessage(chat_id, message);
-		// pageEl.screenshot({path: picname});
-		// bot.telegram.sendPhoto(chat_id, {source: picname});
-	}
-}
-
 async function run (ctx)
 {
 	if (isRunning == false)
@@ -134,7 +83,7 @@ async function run (ctx)
 		// executablePath: "/usr/bin/google-chrome-stable",
 		headless: defaults.headlessS,
 		ignoreHTTPSErrors: true,
-		// userDataDir: `./chromData/`
+		userDataDir: "./chromData/",
 		defaultViewport: null,
 		appMode: true
 	};
@@ -175,71 +124,76 @@ async function crypto (page, coinPairLink, chat_id)
 		chat_id, 
 		`==== ${ coinpairName } | ${ changePer } | ${ changeVal } | ${ currentPrice } ====`
 	);
-	const sels = ["#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(8)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(7)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(6)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(5)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(4)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(3)",
-		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(2)"];
+	const sels = [
+		"[id=\"1W\"]",
+		"[id=\"1M\"]"
+	];
 	for (let index = 0;index < Object.keys(sels).length;index++)
 	{
 		const sel = sels[index];
-		await page.$eval(sel, el => {return el.click();});
-		await delay(4000);
-		const priod = await page.$eval(sel, el => {return el.innerHTML;});
-		const elPriod = await page.$$("#technicals-root > div > div > div.speedometersContainer-1EFQq-4i");
-		const SumSel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(2) > span:nth-child(3)";
+		await common.waitAndClick(page, sel);
+		const priod = await page.$eval(sel, el => {return el.innerHTML;}); // 1 week
+		const SumSel = "#technicals-root > div > div > div:nth-child(2) > div:nth-child(2) > span:nth-child(3)";
 		const SUMRes = await page.$eval(SumSel, el => {return el.innerHTML;});
-		const MASel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(3) > span";
+		const MASel = "#technicals-root > div > div > div:nth-child(2) > div:nth-child(3) > span";
 		const MARes = await page.$eval(MASel, el => {return el.innerHTML;});
-		const OSSel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(1) > span";
+		const OSSel = "#technicals-root > div > div > div:nth-child(2) > div:nth-child(1) > span";
 		const OSRes = await page.$eval(OSSel, el => {return el.innerHTML;});
 		await checkRes(possiblities, [SUMRes, MARes, OSRes], chat_id);
-		await sendToTel(possiblities, [SUMRes, MARes, OSRes], `${ priod }`, elPriod[0], chat_id);
-	}
-	// Ideas	
-	const ideasLink = coinPairLink.replace("technicals", "ideas");
-	let message = "";
-	await common.goingToPage(page, ideasLink);
-	await delay(4000);
-	for (let index = 1;index < 10;index++)
-	{
-		try
-		{
-			const idPriSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div > div:nth-child(2) > div> span`;
-			const idSigSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div > div:nth-child(2) > span`;
-			let idPri = await page.$eval(idPriSel, el => {return el.textContent;});
-			let idSig = await page.$eval(idSigSel, el => {return el.textContent;});
-			idPri = common.trimChar(idPri, ",");
-			idSig = common.trimChar(idSig, ",");
-			idPri = idPri.trim();
-			idSig = idSig.trim();
-			if (idSig == "Long")
-			{
-				idSig = "↗️";
-			}
-			else if (idSig == "Short")
-			{
-				idSig = "🔻";
-			}
-			if (idSig != "Education")
-			{
-				message = `${message + idPri  } ${  idSig  }  `;
-			}
-
-		}
-		catch (error)
-		{
-
-		}
-	}
-	if (message != "")
-	{
-		await bot.telegram.sendMessage(chat_id, message);
+		await sendToTel(possiblities, [SUMRes, MARes, OSRes], `${ priod }`, chat_id);
 	}
 }
 
+function checkRes (possiblities, params, chat_id)
+{
+	params.forEach(element =>
+	{
+		if (possiblities.indexOf(element.toLowerCase()) == -1)
+		{
+			console.log("Sometinhs is wrong", element);
+			bot.telegram.sendMessage(chat_id, `Sometinhs is wrong + ${ element }`);
+		}
+	});
+}
+
+async function sendToTel (possiblities, params, name, chat_id)
+{
+	let sell = 0;
+	let buy = 0;
+	let sellC = 0;
+	let buyC = 0;
+	params.forEach(element =>
+	{
+		const loc = possiblities.indexOf(element.toLowerCase());
+		if (loc > 2)
+		{
+			buy = buy + loc;
+			buyC++;
+		}
+		if (loc < 2)
+		{
+			sell = sell + loc;
+			sellC++;
+		}
+	});
+	if (buy > 10 && buyC == 3 || sell < 2 && sellC == 3)
+	{
+		let sign = "";
+		if (buy > 10 && buyC == 3)
+		{
+			sign = "↗️";
+		}
+		else if (sell < 2 && sellC == 3)
+		{
+			sign = "🔻";
+		}
+		const message = `${ name } ${ sign }\nSummary: ${ params[0] }\nMoving Averages: ${ params[1] }\nOscillators: ${ params[2] }`;
+		console.log(message);
+		await bot.telegram.sendMessage(chat_id, message);
+		// pageEl.screenshot({path: picname});
+		// bot.telegram.sendPhoto(chat_id, {source: picname});
+	}
+}
 
 function expressServer() 
 {

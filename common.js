@@ -83,21 +83,18 @@ exports.closingOtherTabs = async function (browser, page)
 
 exports.closingBrowser = async function (browser, page)
 {
-	if(defaults.closeBrowser)
+	await exports.closingOtherTabs(browser, page);
+	await delay(3000);
+	try { await page.close(); }
+	catch(error)
 	{
-		await exports.closingOtherTabs(browser, page);
-		await delay(3000);
-		try { await page.close(); }
-		catch(error)
-		{
-			// console.log("Page close error");
-		}
-		await exports.randomWaitFull(page, 1 , 2, 1000);
-		try { await browser.close(); }
-		catch(error)
-		{
-			// console.log("browser close error");
-		}
+		// console.log("Page close error");
+	}
+	await exports.randomWaitFull(page, 1 , 2, 1000);
+	try { await browser.close(); }
+	catch(error)
+	{
+		// console.log("browser close error");
 	}
 };
 
@@ -122,4 +119,12 @@ exports.trimChar = function(string, charToRemove)
 	}
 
 	return string;
+};
+
+exports.waitAndClick = async function waitAndClick(page, sel)
+{
+	await delay(1000);
+	await page.waitForSelector(sel);
+	await page.click(sel , exports.waitUntil);
+	await delay(3000);
 };
