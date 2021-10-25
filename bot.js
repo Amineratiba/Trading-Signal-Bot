@@ -190,8 +190,6 @@ async function sendToTel (possiblities, params, name, chat_id)
 		const message = `${ name } ${ sign }\nSummary: ${ params[0] }\nMoving Averages: ${ params[1] }\nOscillators: ${ params[2] }`;
 		console.log(message);
 		await bot.telegram.sendMessage(chat_id, message);
-		// pageEl.screenshot({path: picname});
-		// bot.telegram.sendPhoto(chat_id, {source: picname});
 	}
 }
 
