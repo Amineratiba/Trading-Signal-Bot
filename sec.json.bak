@@ -1,0 +1,8 @@
+{
+	"telegramChannelID" : 
+	{
+		"btc" : "-3213213"
+	},
+	"telegramBotToken" : "4234:432424",
+	"herokoAppAddress" : "http://address.herokuapp.com/"
+}

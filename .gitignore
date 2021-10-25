@@ -1,5 +1,3 @@
-node_modules/puppeteer/.local-chromium/linux-674921/chrome-linux/chrome
 **/chromData/
 node_modules/
-datas/
 sec.json

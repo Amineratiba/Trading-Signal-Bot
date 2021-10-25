@@ -1,44 +1,50 @@
-"use strict"
-var http = require("http");
-var express = require('express');
-const puppeteer = require('puppeteer');
-var CronJob = require('cron').CronJob;
-let common = require('./common');
-let defaults = require('./defaults.json');
-let delay = require('delay');
-const date = require('date-and-time');
-const telegraf = require('telegraf');
-let sec = require('./sec.json');
+"use strict";
+const https = require("https");
+var express = require("express");
+const puppeteer = require("puppeteer");
+var { CronJob } = require("cron");
+const common = require("./common");
+const defaults = require("./defaults.json");
+const delay = require("delay");
+const date = require("date-and-time");
+const { Telegraf } = require("telegraf");
+const sec = require("./sec.json");
 
-let Token = sec.botToken; // Your Bot Token
-let bot = new telegraf(Token);
+const bot = new Telegraf(sec.telegramBotToken);
+
 let isRunning = false;
-bot.start(function (res)
+const {userAgent} = defaults;
+const port = process.env.PORT || defaults.expressPort;
+
+bot.start(function (ctx)
 {
 	run();
+	ctx.reply("Bot is starting");
 });
 bot.help(function (res)
 {
-	res.reply('Heey');
+	res.reply("Heey");
 });
-bot.on('sticker', function (res)
+bot.on("sticker", function (res)
 {
-	res.reply('HEEY');
+	res.reply("HEEY");
 });
-bot.hears('hi', function (res)
+bot.hears("hi", function (res)
 {
-	res.reply('hears');
+	res.reply("Hey");
 });
 bot.launch();
 
-var app = express();
-let port = process.env.PORT || defaults.port;
+if(defaults.useExpress)
+{
+	expressServer();
+}
+process.once("SIGINT", () => {return bot.stop("SIGINT");});
+process.once("SIGTERM", () => {return bot.stop("SIGTERM");});
 
-let userAgent = defaults.userAgent;
+console.log("\n", date.format(new Date(), "YYYY/MM/DD HH:mm:ss"), "\n");
 
-console.log('\n', date.format(new Date(), 'YYYY/MM/DD HH:mm:ss'), '\n');
-
-async function checkRes (possiblities, params, chat_id)
+function checkRes (possiblities, params, chat_id)
 {
 	params.forEach(element =>
 	{
@@ -58,7 +64,7 @@ async function sendToTel (possiblities, params, name, pageEl, chat_id)
 	let buyC = 0;
 	params.forEach(element =>
 	{
-		let loc = possiblities.indexOf(element.toLowerCase());
+		const loc = possiblities.indexOf(element.toLowerCase());
 		if (loc > 2)
 		{
 			buy = buy + loc;
@@ -70,18 +76,18 @@ async function sendToTel (possiblities, params, name, pageEl, chat_id)
 			sellC++;
 		}
 	});
-	if ((buy > 10 && buyC == 3) || (sell < 2 && sellC == 3))
+	if (buy > 10 && buyC == 3 || sell < 2 && sellC == 3)
 	{
 		let sign = "";
 		if (buy > 10 && buyC == 3)
 		{
-			sign = '↗️'
+			sign = "↗️";
 		}
 		else if (sell < 2 && sellC == 3)
 		{
-			sign = "🔻"
+			sign = "🔻";
 		}
-		let message = `${ name } ${ sign }\nSummary: ${ params[0] }\nMoving Averages: ${ params[1] }\nOscillators: ${ params[2] }`;
+		const message = `${ name } ${ sign }\nSummary: ${ params[0] }\nMoving Averages: ${ params[1] }\nOscillators: ${ params[2] }`;
 		console.log(message);
 		await bot.telegram.sendMessage(chat_id, message);
 		// pageEl.screenshot({path: picname});
@@ -92,22 +98,22 @@ async function sendToTel (possiblities, params, name, pageEl, chat_id)
 async function crypto (browser, page, coinPairLink, chat_id)
 {
 	await delay(4000);
-	let possiblities = ["strong sell", "sell", "neutral", "buy", "strong buy"];
+	const possiblities = ["strong sell", "sell", "neutral", "buy", "strong buy"];
 	await common.goingToPage(page, coinPairLink);
 	await common.closingOtherTabs(browser, page);
 	await delay(4000);
-	let changeSel = "#anchor-page-1 > div > div.tv-category-header__price-line.tv-category-header__price-line--allow-wrap-on-tablet.js-header-symbol-quotes.quote-ticker-inited > div.tv-category-header__main-price.js-scroll-container > div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div:nth-child(3) > span:nth-child(2)";
-	let change = await page.$eval(changeSel, el => el.innerHTML);
-	if (change[0] == '(' && change[change.length - 1] == ')')
+	const changeSel = "#anchor-page-1 > div > div.tv-category-header__price-line.tv-category-header__price-line--allow-wrap-on-tablet.js-header-symbol-quotes.quote-ticker-inited > div.tv-category-header__main-price.js-scroll-container > div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div:nth-child(3) > span:nth-child(2)";
+	let change = await page.$eval(changeSel, el => {return el.innerHTML;});
+	if (change[0] == "(" && change[change.length - 1] == ")")
 	{
 		change = change.substring(1, change.length - 1);
 	}
-	let coinPairNameSel = "#anchor-page-1 > div > div.tv-category-header__title-line > div.tv-category-header__title > h1 > div.tv-symbol-header__long-title";
-	let coinpairName = await page.$eval(coinPairNameSel, el => el.innerHTML);
-	let currentPriceSel = '#anchor-page-1 > div > div.tv-category-header__price-line.tv-category-header__price-line--allow-wrap-on-tablet.js-header-symbol-quotes.quote-ticker-inited > div.tv-category-header__main-price.js-scroll-container > div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div.tv-symbol-price-quote__value.js-symbol-last';
-	let currentPrice = await page.$eval(currentPriceSel, el => el.textContent);
+	const coinPairNameSel = "#anchor-page-1 > div > div.tv-category-header__title-line > div.tv-category-header__title > h1 > div.tv-symbol-header__long-title";
+	const coinpairName = await page.$eval(coinPairNameSel, el => {return el.innerHTML;});
+	const currentPriceSel = "#anchor-page-1 > div > div.tv-category-header__price-line.tv-category-header__price-line--allow-wrap-on-tablet.js-header-symbol-quotes.quote-ticker-inited > div.tv-category-header__main-price.js-scroll-container > div > div > div > div.tv-symbol-price-quote__row.js-last-price-block-value-row > div.tv-symbol-price-quote__value.js-symbol-last";
+	const currentPrice = await page.$eval(currentPriceSel, el => {return el.textContent;});
 	await bot.telegram.sendMessage(chat_id, `===== ${ coinpairName } | ${ change } | ${ currentPrice } =====`);
-	let sels = [`#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(8)`,
+	const sels = ["#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(8)",
 		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(7)",
 		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(6)",
 		"#technicals-root > div > div > div.wrap-2taoBjQZ > div > div > div:nth-child(1) > div > div > div:nth-child(5)",
@@ -117,21 +123,21 @@ async function crypto (browser, page, coinPairLink, chat_id)
 	for (let index = 0;index < Object.keys(sels).length;index++)
 	{
 		const sel = sels[index];
-		await page.$eval(sel, el => el.click());
+		await page.$eval(sel, el => {return el.click();});
 		await delay(4000);
-		let priod = await page.$eval(sel, el => el.innerHTML);
-		const elPriod = await page.$$('#technicals-root > div > div > div.speedometersContainer-1EFQq-4i');
-		let SumSel = `#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(2) > span:nth-child(3)`;
-		let SUMRes = await page.$eval(SumSel, el => el.innerHTML);
-		let MASel = `#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(3) > span`;
-		let MARes = await page.$eval(MASel, el => el.innerHTML);
-		let OSSel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(1) > span";
-		let OSRes = await page.$eval(OSSel, el => el.innerHTML);
+		const priod = await page.$eval(sel, el => {return el.innerHTML;});
+		const elPriod = await page.$$("#technicals-root > div > div > div.speedometersContainer-1EFQq-4i");
+		const SumSel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(2) > span:nth-child(3)";
+		const SUMRes = await page.$eval(SumSel, el => {return el.innerHTML;});
+		const MASel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(3) > span";
+		const MARes = await page.$eval(MASel, el => {return el.innerHTML;});
+		const OSSel = "#technicals-root > div > div > div.speedometersContainer-1EFQq-4i > div:nth-child(1) > span";
+		const OSRes = await page.$eval(OSSel, el => {return el.innerHTML;});
 		await checkRes(possiblities, [SUMRes, MARes, OSRes], chat_id);
 		await sendToTel(possiblities, [SUMRes, MARes, OSRes], `${ priod }`, elPriod[0], chat_id);
 	}
 	// Ideas	
-	let ideasLink = coinPairLink.replace("technicals", "ideas");
+	const ideasLink = coinPairLink.replace("technicals", "ideas");
 	let message = "";
 	await common.goingToPage(page, ideasLink);
 	await delay(4000);
@@ -139,29 +145,30 @@ async function crypto (browser, page, coinPairLink, chat_id)
 	{
 		try
 		{
-			let idSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div`;
-			let idPriSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div > div:nth-child(2) > div> span`
-			let idSigSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div > div:nth-child(2) > span`
-			let idPri = await page.$eval(idPriSel, el => el.textContent);
-			let idSig = await page.$eval(idSigSel, el => el.textContent);
-			idPri = common.trimChar(idPri, ',');
-			idSig = common.trimChar(idSig, ',');
+			const idSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div`;
+			const idPriSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div > div:nth-child(2) > div> span`;
+			const idSigSel = `#js-category-content > div > div > div > div > div > div > div:nth-child(2) > div:nth-child(${ index }) > div > div:nth-child(2) > span`;
+			let idPri = await page.$eval(idPriSel, el => {return el.textContent;});
+			let idSig = await page.$eval(idSigSel, el => {return el.textContent;});
+			idPri = common.trimChar(idPri, ",");
+			idSig = common.trimChar(idSig, ",");
 			idPri = idPri.trim();
 			idSig = idSig.trim();
 			if (idSig == "Long")
 			{
-				idSig = '↗️'
+				idSig = "↗️";
 			}
 			else if (idSig == "Short")
 			{
-				idSig = "🔻"
+				idSig = "🔻";
 			}
 			if (idSig != "Education")
 			{
-				message = message + idPri + ' ' + idSig + '  ';
+				message = `${message + idPri  } ${  idSig  }  `;
 			}
 
-		} catch (error)
+		}
+		catch (error)
 		{
 
 		}
@@ -174,25 +181,25 @@ async function crypto (browser, page, coinPairLink, chat_id)
 
 async function run ()
 {
-	let chIDs = sec.telegramChannelID; // Channel ID Or Username
+	const chIDs = sec.telegramChannelID; // Channel ID Or Username
 	if (isRunning == false)
 	{
 		isRunning = true;
-		console.log('Lets do it');
+		console.log("Initializing");
 	}
 	else
 	{
-		console.log('last one is in pending.');
+		console.log("Bot is already running.");
 		return;
 	}
-	let args =
+	const args =
 		[
-			'--no-sandbox',
-			'--disable-setuid-sandbox',
-			'--disable-infobars',
-			'--window-position=0,0',
-			'--ignore-certifcate-errors',
-			'--ignore-certifcate-errors-spki-list',
+			"--no-sandbox",
+			"--disable-setuid-sandbox",
+			"--disable-infobars",
+			"--window-position=0,0",
+			"--ignore-certifcate-errors",
+			"--ignore-certifcate-errors-spki-list",
 			`--user-agent=${ userAgent }`
 		];
 	const options =
@@ -210,71 +217,74 @@ async function run ()
 	await page.setDefaultNavigationTimeout(50000);
 	await page.setViewport(defaults.viewport);
 	// await crypto(browser, page, 'https://www.tradingview.com/symbols/LBCUSD/technicals/', 'LBCUSD.png');
-	await crypto(browser, page, 'https://www.tradingview.com/symbols/LBCBTC/technicals/', chIDs["lbc"]);
-	await crypto(browser, page, 'https://www.tradingview.com/symbols/ETHUSD/technicals/', chIDs["eth"]);
-	await crypto(browser, page, 'https://www.tradingview.com/symbols/ETHBTC/technicals/', chIDs["btc"]);
-	await crypto(browser, page, 'https://www.tradingview.com/symbols/BTCUSD/technicals/', chIDs["btc"]);
-	await crypto(browser, page, 'https://www.tradingview.com/symbols/BNBUSDT/technicals/', chIDs["bnb"]);
-	await crypto(browser, page, 'https://www.tradingview.com/symbols/EOSUSDT/technicals/', chIDs["eos"]);
-	await crypto(browser, page, 'https://www.tradingview.com/symbols/LINKUSDT/technicals/', chIDs["link"]);
+	await crypto(browser, page, "https://www.tradingview.com/symbols/LBCBTC/technicals/", chIDs["lbc"]);
+	await crypto(browser, page, "https://www.tradingview.com/symbols/ETHUSD/technicals/", chIDs["eth"]);
+	await crypto(browser, page, "https://www.tradingview.com/symbols/ETHBTC/technicals/", chIDs["btc"]);
+	await crypto(browser, page, "https://www.tradingview.com/symbols/BTCUSD/technicals/", chIDs["btc"]);
+	await crypto(browser, page, "https://www.tradingview.com/symbols/BNBUSDT/technicals/", chIDs["bnb"]);
+	await crypto(browser, page, "https://www.tradingview.com/symbols/EOSUSDT/technicals/", chIDs["eos"]);
+	await crypto(browser, page, "https://www.tradingview.com/symbols/LINKUSDT/technicals/", chIDs["link"]);
 	// await page.screenshot({path: 'screenshot.png'});
 	console.log("closing browser ... ");
-	await common.closingBrower(browser, page);
+	await common.closingBrowser(browser, page);
 	isRunning = false;
 	return;
 }
 
-try
+function expressServer() 
 {
-	if (defaults.useExpress)
+	try
 	{
+		var app = express();
 		setInterval(function ()
 		{
 			try
 			{
 				https.get(defaults.herokoAppAddress);
-			} catch (error)
+			}
+			catch (error)
 			{
 				console.log("Could not send the request", error);
 			}
 		}, 300000); // every 5 minutes (300000)
-
-		app.get('/', (req, res) => res.send("hi"));
-		app.listen(port, () => console.log(`Listening on port: ${ port }!`));
-	}
-	if (defaults.useCron)
-	{
-		var job = new CronJob(`*/${ defaults.cronEveryMin } * * * *`, async function cl ()
-		// let job = new CronJob(`0 */1 * * *`, async function cl()
+	
+		app.get("/", (req, res) => {return res.send("hi");});
+		app.listen(port, () => {return console.log(`Listening on port: ${ port }!`);});
+		if (defaults.useCron)
 		{
-			if (typeof cl.counter == 'undefined')
+			var job = new CronJob(`*/${ defaults.cronEveryMin } * * * *`, async function cl ()
+			// let job = new CronJob(`0 */1 * * *`, async function cl()
 			{
-				cl.counter = 0;
-			}
-			console.log('Run number:', cl.counter++);
-			console.log('Chanced');
-			await run();
-		}, null, true, 'Asia/Tehran');
-		job.start();
-		// cron.schedule(`*/${defaults.cronEveryMin} * * * *`, async function cl()
-		// {
-		// 	if( typeof cl.counter == 'undefined' )
-		// 	{
-		// 		cl.counter = 0;
-		// 	}
-		// 	console.log('Run number:', cl.counter++);
-		// 	console.log('Chanced');
-		// 	await run();
-		// });
+				if (typeof cl.counter == "undefined")
+				{
+					cl.counter = 0;
+				}
+				console.log("Run number:", cl.counter++);
+				console.log("Chanced");
+				await run();
+			}, null, true, "Asia/Tehran");
+			job.start();
+			// cron.schedule(`*/${defaults.cronEveryMin} * * * *`, async function cl()
+			// {
+			// 	if( typeof cl.counter == 'undefined' )
+			// 	{
+			// 		cl.counter = 0;
+			// 	}
+			// 	console.log('Run number:', cl.counter++);
+			// 	console.log('Chanced');
+			// 	await run();
+			// });
+		}
+		run();
+		return;
 	}
-	run();
-	return;
-}
-catch (error)
-{
-	console.log(error);
-	isRunning = false;
-	// process.exit(-2);
+	catch (error)
+	{
+		console.log(error);
+		isRunning = false;
+		// process.exit(-2);
+	}
+	
 }
 
 function preload ()

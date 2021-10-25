@@ -19,28 +19,17 @@
     "explorer.autoReveal": false,
     "files.exclude": {
         ".directory": true,
-        ".gitmessage.txt": true,
         ".vscode": true,
         "**/.DS_Store": true,
         "**/.git": true,
         "**/.hg": true,
-        "**/.svn": true,
-        "database": true,
-        "db_dump": true,
-        "node_modules": true,
-        "package-lock.json": true,
-        "Procfile": true
+        "**/.svn": true
     },
     "search.exclude": {
         ".vscode": true,
         "**/bower_components": true,
         "**/node_modules": true,
-        "backups": true,
-        "database": true,
-        "db_dump": true,
-        "public/framework": true,
-        "public/js/JS": true,
-        "public/stylesheet/css": true
+        "db_dump": true
     },
     "emmet.syntaxProfiles": {
         "ejs": "html"
@@ -50,9 +39,6 @@
     "git.ignoreLimitWarning": true,
     "telemetry.enableCrashReporter": false,
     "telemetry.enableTelemetry": false,
-    "files.watcherExclude": {
-        "docs": true
-    },
     "javascript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": true,
     "typescript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": true,
     "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
